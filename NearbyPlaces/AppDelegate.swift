@@ -1,10 +1,4 @@
-//
-//  AppDelegate.swift
-//  NearbyPlaces
-//
-//  Created by Bilal Bhutta on 2/7/17.
-//  Copyright © 2017 Bilal Bhutta. All rights reserved.
-//
+
 
 import UIKit
 import GoogleMaps
