@@ -36,6 +36,10 @@ class MapViewController: UIViewController {
         mapView = GMSMapView.map(withFrame: self.view.bounds, camera: camera)
         mapView.autoresizingMask = [.flexibleHeight, .flexibleWidth, .flexibleTopMargin, .flexibleBottomMargin, .flexibleLeftMargin, .flexibleRightMargin]
         self.containerView.addSubview(mapView)
+//        24.948883, 67.064362
+//        25.008627, 67.097680
+
+        self.getPolylineRoute(from: CLLocationCoordinate2D(latitude: (userLocation?.latitude)!, longitude: (userLocation?.longitude)!), to: CLLocationCoordinate2D(latitude: lat, longitude: lng))
         
         // Add gesture
         addSwipeGesture()
@@ -54,6 +58,52 @@ class MapViewController: UIViewController {
             gesture.direction = direction
             self.bottomInfoView.addGestureRecognizer(gesture)
         }
+    }
+//    oygwCgoixKaAxAiA`By@rAiA`B_ArAcDzEiFvHyCpEsAzBBJ@JARGPKNOJMBM@_@IUYCGAGa@s@m@o@aJsHwMoKoHqGkIeHkIwGgCwBi@_@u@i@[OSEQAiAJyDP{DJsGLaCJuGNgKVaNf@iA@uCHuNT{BFiMZ{JViFHi@D_AXINWVWHM?[ESMMQIUuBDaKT_GNqDL_CD{HTkBDwIXmQ^_Pb@_MZaFH}HV[HONINOJSHS@_@GSMMSIWA[BYJULMFEBAF_@Dw@EqCImD_@qQMoHOsHKmDK{HWwIEiCGgE]}NGsAKuFI{DMqJUmSKmDKiBIy@{@wEIe@Kq@Gm@EsAKuFAaGWoM
+    
+    // Pass your source and destination coordinates in this method.
+    func getPolylineRoute(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D){
+        
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
+        
+        let url = URL(string: "https://maps.googleapis.com/maps/api/directions/json?origin=\(source.latitude),\(source.longitude)&destination=\(destination.latitude),\(destination.longitude)&sensor=false&mode=driving&key=AIzaSyCcCG10K0F1qxiZxu1WQ5qRxFCHv4CeNo0")!
+        
+        let task = session.dataTask(with: url, completionHandler: {
+            (data, response, error) in
+            if error != nil {
+                print(error!.localizedDescription)
+            }else{
+                do {
+                    if let json : [String:Any] = try JSONSerialization.jsonObject(with: data!, options: .allowFragments) as? [String: Any]{
+                        
+                        if let routes = json["routes"] as? [Any] {
+                            if let route = routes[0] as? [String:Any]{
+                                if let overview_polyline = route["overview_polyline"] as? [String:Any]{
+                                    if let polyString = overview_polyline["points"] as? String{
+                                        //Call this method to draw path on map
+                                        DispatchQueue.main.async {
+                                            self.showPath(polyStr: polyString)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }catch{
+                    print("error in JSONSerialization")
+                }
+            }
+        })
+        task.resume()
+    }
+    
+    func showPath(polyStr :String){
+        let path = GMSPath(fromEncodedPath: polyStr)
+        let polyline = GMSPolyline(path: path)
+        polyline.strokeWidth = 3.0
+        polyline.map = mapView // Your map view
     }
     
     func addMarkerAtCurrentLocation(_ userLocation: CLLocationCoordinate2D)  {

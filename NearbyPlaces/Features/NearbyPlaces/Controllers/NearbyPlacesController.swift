@@ -6,7 +6,7 @@ import Alamofire
 
 class NearbyPlacesController {
     static func getCategories() -> [QCategory] {
-        let list:[QCategory] = ["Bakery", "Doctor", "School", "Taxi_stand", "Hair_care", "Restaurant", "Pharmacy", "Atm", "Gym", "Store", "Spa"]
+        let list:[QCategory] = ["Bakery", "Doctor", "School", "Taxi_stand", "Hair_care", "Restaurant", "Pharmacy", "Atm", "Gym", "Store"]
         return list
     }
         

@@ -6,8 +6,8 @@ import GoogleMaps
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    static let googleMapsApiKey = "AIzaSyBGOVvrHspeVjtaQsj0N6jqYdrwVsHsBQE"
-    static let googlePlacesAPIKey = "AIzaSyBGOVvrHspeVjtaQsj0N6jqYdrwVsHsBQE"
+    static let googleMapsApiKey = "AIzaSyB0FaAOgIJx1dr9ozP-slUfFR_CupDS8e4"
+    static let googlePlacesAPIKey = "AIzaSyB0FaAOgIJx1dr9ozP-slUfFR_CupDS8e4"
     
     var window: UIWindow?
 

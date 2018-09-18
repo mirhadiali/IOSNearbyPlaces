@@ -208,6 +208,7 @@
 				TargetAttributes = {
 					9CD40AC01F08E1F20084F360 = {
 						CreatedOnToolsVersion = 8.3.3;
+						DevelopmentTeam = C55DSMVFYQ;
 						LastSwiftMigration = 0910;
 						ProvisioningStyle = Automatic;
 					};
@@ -458,6 +459,7 @@
 			baseConfigurationReference = 49F23FAFDA1394350D7916C1 /* Pods-NearbyPlaces.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = C55DSMVFYQ;
 				INFOPLIST_FILE = NearbyPlaces/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.hadi.NearbyPlaces;
@@ -472,6 +474,7 @@
 			baseConfigurationReference = DCEC181A4EFDC237F3F20A7A /* Pods-NearbyPlaces.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = C55DSMVFYQ;
 				INFOPLIST_FILE = NearbyPlaces/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.hadi.NearbyPlaces;

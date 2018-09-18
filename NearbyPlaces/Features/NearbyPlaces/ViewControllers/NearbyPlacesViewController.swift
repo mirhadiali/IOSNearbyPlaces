@@ -7,17 +7,24 @@ import SafariServices
 
 private let reuseIdentifier = "PlacesCell"
 
-class NearbyPlacesViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class NearbyPlacesViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     var locationManager:CLLocationManager?
     
+    @IBOutlet weak var searchBarHeight: NSLayoutConstraint!
+    @IBOutlet weak var searchBar: UISearchBar!
     let minimumSpacing = CGFloat.init(15) //CGFloat(MAXFLOAT)
     let cellWidth:CGFloat = 250
     let radius = 5000 // 5km
     var category : QCategory?
     var currentLocation : CLLocationCoordinate2D?
     var places: [QPlace] = []
+    var filteredPlaces: [QPlace] = []
+//    var tempData = ["AAA", "BBB", "CCC"]
+//    var filteredTempData : [String] = []
+    @IBOutlet weak var collectionView : UICollectionView!
     
+    var isFilteredResult = false
     var isLoading = false
     var response : QNearbyPlacesResponse?
     
@@ -32,7 +39,8 @@ class NearbyPlacesViewController: UICollectionViewController, UICollectionViewDe
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+//        self.collectionView.reloadData()
+//        let
         determineMyCurrentLocation()
     }
     
@@ -99,17 +107,29 @@ class NearbyPlacesViewController: UICollectionViewController, UICollectionViewDe
 
     // MARK: UICollectionViewDataSource
 
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if self.isFilteredResult {
+            return filteredPlaces.count
+        }
         return places.count
     }
 
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! PlacesCell
         
-        let place = places[indexPath.row]
-        cell.delegate = self
-        cell.update(place: place)
         
+        if self.isFilteredResult {
+            let place = filteredPlaces[indexPath.row]
+            cell.delegate = self
+            cell.update(place: place)
+//            cell.label.text = filteredTempData[indexPath.row]
+        }else{
+//            cell.label.text = tempData[indexPath.row]
+            
+            let place = places[indexPath.row]
+            cell.delegate = self
+            cell.update(place: place)
+        }
         if indexPath.row == places.count - 1 {
             loadPlaces(false)
         }
@@ -117,12 +137,11 @@ class NearbyPlacesViewController: UICollectionViewController, UICollectionViewDe
         return cell
     }
     
-    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         performSegue(withIdentifier: "maps-vc", sender: indexPath)
     }
 
     // MARK: UICollectionViewDelegateFlowLayoutDelegate
-    
     public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return minimumSpacing
     }
@@ -133,7 +152,7 @@ class NearbyPlacesViewController: UICollectionViewController, UICollectionViewDe
         let columnWidth:CGFloat = cellWidth
         let imageWidth = columnWidth
         let labelWidth = columnWidth - cellPadding * 2
-        
+
         let photoHeight = heightForPhotoAtIndexPath(indexPath: indexPath, withWidth: imageWidth)
         let annotationHeight = heightForAnnotationAtIndexPath(indexPath: indexPath, withWidth: labelWidth)
         let height = photoHeight + annotationHeight
@@ -144,26 +163,44 @@ class NearbyPlacesViewController: UICollectionViewController, UICollectionViewDe
     // Calculates the height of photo
     func heightForPhotoAtIndexPath(indexPath: IndexPath,
                                    withWidth width: CGFloat) -> CGFloat {
-        
-        var size = CGSize.init(width: CGFloat(MAXFLOAT), height: 1)
-        let place = places[indexPath.row]
-        
-        guard let photo = place.photos?.first, place.photos?.first?.photoRef != nil else {
-            return 0
+        if isFilteredResult{
+            var size = CGSize.init(width: CGFloat(MAXFLOAT), height: 1)
+            let place = filteredPlaces[indexPath.row]
+            
+            guard let photo = place.photos?.first, place.photos?.first?.photoRef != nil else {
+                return 0
+            }
+            
+            size = CGSize.init(width: CGFloat(photo.width!), height: CGFloat(photo.height!))
+            
+            let boundingRect =  CGRect(x: 0, y: 0, width: width, height: CGFloat(MAXFLOAT))
+            let rect  = AVMakeRect(aspectRatio: size, insideRect: boundingRect)
+            
+            return rect.size.height
+        }else{
+            
+            var size = CGSize.init(width: CGFloat(MAXFLOAT), height: 1)
+            let place = places[indexPath.row]
+            
+            guard let photo = place.photos?.first, place.photos?.first?.photoRef != nil else {
+                return 0
+            }
+            
+            size = CGSize.init(width: CGFloat(photo.width!), height: CGFloat(photo.height!))
+            
+            let boundingRect =  CGRect(x: 0, y: 0, width: width, height: CGFloat(MAXFLOAT))
+            let rect  = AVMakeRect(aspectRatio: size, insideRect: boundingRect)
+            
+            return rect.size.height
         }
-        
-        size = CGSize.init(width: CGFloat(photo.width!), height: CGFloat(photo.height!))
-        
-        let boundingRect =  CGRect(x: 0, y: 0, width: width, height: CGFloat(MAXFLOAT))
-        let rect  = AVMakeRect(aspectRatio: size, insideRect: boundingRect)
-        
-        return rect.size.height
     }
     
     // Calculates the height label
     func heightForAnnotationAtIndexPath(indexPath: IndexPath, withWidth width: CGFloat) -> CGFloat {
-        
-        let place = places[indexPath.row]
+        var place = places[indexPath.row]
+        if isFilteredResult{
+            place = filteredPlaces[indexPath.row]
+        }
         let annotationPadding = CGFloat(5)
         
         let font = UIFont.systemFont(ofSize: 15)
@@ -190,7 +227,11 @@ class NearbyPlacesViewController: UICollectionViewController, UICollectionViewDe
         if segue.identifier == "maps-vc" && sender is IndexPath {
             let dvc = segue.destination as! MapViewController
             dvc.index = (sender as! IndexPath).row
-            dvc.places = places
+            if self.isFilteredResult{
+                dvc.places = self.filteredPlaces
+            }else{
+                dvc.places = places
+            }
             dvc.userLocation = currentLocation
         }
      }
@@ -270,5 +311,47 @@ extension NearbyPlacesViewController: PlaceCellDelegate {
         }
     }
     
+}
+
+extension NearbyPlacesViewController : UISearchBarDelegate{
     
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        if searchBar.text != ""{
+            self.searchResult(text: searchBar.text!.lowercased())
+        }
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        if searchBar.text != ""{
+            self.searchResult(text: searchBar.text!.lowercased())
+        }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        self.clearSearch()
+    }
+    
+    func searchBarShouldEndEditing(_ searchBar: UISearchBar) -> Bool {
+        if searchBar.text == ""{
+            self.clearSearch()
+        }
+        return true
+    }
+    
+    func clearSearch(){
+        
+        searchBar.text = ""
+        filteredPlaces.removeAll()
+        self.isFilteredResult = false
+        self.collectionView.reloadData()
+    }
+    
+    func searchResult(text: String){
+        
+        filteredPlaces = places.filter { (place) -> Bool in
+            return place.name?.lowercased().contains(text) == true
+        }
+        self.isFilteredResult = true
+        self.collectionView.reloadData()
+    }
 }
